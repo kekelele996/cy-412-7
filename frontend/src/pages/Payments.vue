@@ -14,16 +14,24 @@ async function pay(id: number) {
   ElMessage.success('支付宝沙箱支付成功');
 }
 
-onMounted(paymentStore.fetchPayments);
+onMounted(() => {
+  paymentStore.fetchPayments();
+  paymentStore.fetchOverdueStats();
+});
 </script>
 
 <template>
   <section>
     <div class="stats-row">
       <StatCard label="本月待缴" :value="`¥${paymentStore.unpaidAmount.toFixed(2)}`" hint="包含物业费、水电费" tone="amber" />
+      <StatCard
+        label="逾期金额"
+        :value="`¥${Number(paymentStore.overdueStats.overdueAmount || paymentStore.overdueAmount).toFixed(2)}`"
+        :hint="`共 ${paymentStore.overdueStats.overdueCount || 0} 笔逾期`"
+        tone="red"
+      />
       <StatCard label="100㎡ 物业费估算" :value="`¥${calculatePropertyFee(100, 'property')}`" hint="工具函数计算" tone="green" />
       <StatCard label="停车月费" :value="`¥${calculatePropertyFee(1, 'parking')}`" hint="固定月租" tone="blue" />
-      <StatCard label="账单数量" :value="paymentStore.payments.length" hint="历史账单" />
     </div>
     <section class="section-panel">
       <div class="section-title">

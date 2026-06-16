@@ -8,6 +8,7 @@ public final class Permissions {
     public static final String REPAIR_UPDATE = "repair:update";
     public static final String PAYMENT_VIEW = "payment:view";
     public static final String PAYMENT_PAY = "payment:pay";
+    public static final String PAYMENT_REMIND = "payment:remind";
     public static final String ANNOUNCEMENT_VIEW = "announcement:view";
     public static final String ANNOUNCEMENT_PUBLISH = "announcement:publish";
     public static final String USER_PROFILE = "user:profile";

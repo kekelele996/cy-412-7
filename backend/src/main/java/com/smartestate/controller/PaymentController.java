@@ -3,6 +3,8 @@ package com.smartestate.controller;
 import com.smartestate.common.Constants;
 import com.smartestate.common.Result;
 import com.smartestate.dto.PaymentGenerateRequest;
+import com.smartestate.dto.PaymentOverdueStats;
+import com.smartestate.dto.PaymentRemindRequest;
 import com.smartestate.entity.Payment;
 import com.smartestate.service.PaymentService;
 import com.smartestate.utils.LogUtil;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/payments")
@@ -44,5 +47,19 @@ public class PaymentController {
     public Result<Payment> generate(@RequestBody PaymentGenerateRequest body, HttpServletRequest request) {
         String role = (String) request.getAttribute(Constants.CURRENT_USER_ROLE);
         return Result.ok(paymentService.generate(role, body));
+    }
+
+    @GetMapping("/overdue-stats")
+    public Result<PaymentOverdueStats> getOverdueStats(HttpServletRequest request) {
+        String role = (String) request.getAttribute(Constants.CURRENT_USER_ROLE);
+        LogUtil.info("PaymentController overdueStats role=%s", role);
+        return Result.ok(paymentService.getOverdueStats(role));
+    }
+
+    @PostMapping("/remind")
+    public Result<Map<String, Object>> sendReminders(@RequestBody PaymentRemindRequest body, HttpServletRequest request) {
+        String role = (String) request.getAttribute(Constants.CURRENT_USER_ROLE);
+        LogUtil.info("PaymentController sendReminders count=%s role=%s", body.getPaymentIds() == null ? 0 : body.getPaymentIds().size(), role);
+        return Result.ok(paymentService.sendReminders(role, body));
     }
 }

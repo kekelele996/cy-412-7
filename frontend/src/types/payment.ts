@@ -10,7 +10,20 @@ export interface Payment {
   amount: number;
   month: string;
   status: PaymentStatus;
+  dueDate?: string;
   paidAt?: string;
   createdAt: string;
+  overdue?: boolean;
   user?: User;
+}
+
+export interface PaymentOverdueStats {
+  overdueAmount: number;
+  overdueCount: number;
+}
+
+export interface PaymentRemindResult {
+  successCount: number;
+  failCount: number;
+  totalCount: number;
 }

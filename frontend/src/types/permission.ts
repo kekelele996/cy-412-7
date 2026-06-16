@@ -8,6 +8,7 @@ export type PermissionCode =
   | 'repair:update'
   | 'payment:view'
   | 'payment:pay'
+  | 'payment:remind'
   | 'announcement:view'
   | 'announcement:publish'
   | 'user:profile'

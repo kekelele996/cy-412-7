@@ -5,6 +5,8 @@ import com.smartestate.common.ErrorCode;
 import com.smartestate.constants.LogTemplates;
 import com.smartestate.constants.Messages;
 import com.smartestate.dto.PaymentGenerateRequest;
+import com.smartestate.dto.PaymentOverdueStats;
+import com.smartestate.dto.PaymentRemindRequest;
 import com.smartestate.entity.Payment;
 import com.smartestate.mapper.PaymentMapper;
 import com.smartestate.service.OperationLogService;
@@ -15,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -27,10 +31,23 @@ public class PaymentServiceImpl implements PaymentService {
         this.operationLogService = operationLogService;
     }
 
+    private void enrichOverdueFlag(List<Payment> payments) {
+        for (Payment payment : payments) {
+            payment.setOverdue(payment.isOverdue());
+        }
+    }
+
     @Override
     public List<Payment> list(Long userId, String role) {
         LogUtil.info(LogTemplates.PAYMENT_LIST, userId, role);
-        return paymentMapper.selectList(new LambdaQueryWrapper<Payment>().eq(Payment::getUserId, userId).orderByDesc(Payment::getCreatedAt));
+        List<Payment> list;
+        if ("staff".equals(role) || "admin".equals(role)) {
+            list = paymentMapper.selectList(new LambdaQueryWrapper<Payment>().orderByDesc(Payment::getCreatedAt));
+        } else {
+            list = paymentMapper.selectList(new LambdaQueryWrapper<Payment>().eq(Payment::getUserId, userId).orderByDesc(Payment::getCreatedAt));
+        }
+        enrichOverdueFlag(list);
+        return list;
     }
 
     @Override
@@ -50,6 +67,7 @@ public class PaymentServiceImpl implements PaymentService {
         operationLogService.record(payment.getUserId(), role, "payment.pay", "Payment", id,
                 String.format(LogTemplates.PAYMENT_PAY, id, payment.getMonth(), role) + " | " +
                         String.format(Messages.BACK_PAYMENT_PAID, id, role) + " | amount=" + CommonFormatter.money(payment.getAmount()));
+        payment.setOverdue(false);
         return payment;
     }
 
@@ -61,10 +79,54 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setFeeType(request.getFeeType() == null ? "property" : request.getFeeType());
         payment.setAmount(new BigDecimal("426.00"));
         payment.setStatus("unpaid");
+        if (request.getDueDate() != null) {
+            payment.setDueDate(request.getDueDate());
+        }
         payment.setCreatedAt(LocalDateTime.now());
         paymentMapper.insert(payment);
         operationLogService.record(request.getUserId(), role, "payment.generate", "Payment", payment.getId(),
                 String.format(LogTemplates.PAYMENT_GENERATE, payment.getId(), payment.getFeeType(), role));
+        payment.setOverdue(false);
         return payment;
+    }
+
+    @Override
+    public PaymentOverdueStats getOverdueStats(String role) {
+        LogUtil.info(LogTemplates.PAYMENT_OVERDUE_STATS, role);
+        BigDecimal amount = paymentMapper.sumOverdueAmount();
+        Integer count = paymentMapper.countOverdue();
+        return new PaymentOverdueStats(amount == null ? BigDecimal.ZERO : amount, count == null ? 0 : count);
+    }
+
+    @Override
+    public Map<String, Object> sendReminders(String role, PaymentRemindRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        List<Long> ids = request.getPaymentIds();
+        int successCount = 0;
+        int failCount = 0;
+
+        if (ids != null && !ids.isEmpty()) {
+            for (Long id : ids) {
+                try {
+                    Payment payment = paymentMapper.selectById(id);
+                    if (payment != null && payment.isOverdue()) {
+                        successCount++;
+                        operationLogService.record(payment.getUserId(), role, "payment.remind", "Payment", id,
+                                String.format(LogTemplates.PAYMENT_REMIND_SINGLE, id, role));
+                    } else {
+                        failCount++;
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                }
+            }
+        }
+
+        result.put("successCount", successCount);
+        result.put("failCount", failCount);
+        result.put("totalCount", ids == null ? 0 : ids.size());
+        operationLogService.record(null, role, "payment.remind.batch", "Payment", null,
+                String.format(LogTemplates.PAYMENT_REMIND_BATCH, successCount, role));
+        return result;
     }
 }

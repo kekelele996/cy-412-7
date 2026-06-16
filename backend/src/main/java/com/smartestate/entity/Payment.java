@@ -19,9 +19,26 @@ public class Payment {
     private BigDecimal amount;
     private String month;
     private String status;
+    private LocalDateTime dueDate;
     private LocalDateTime paidAt;
     private LocalDateTime createdAt;
 
     @TableField(exist = false)
     private User user;
+
+    @TableField(exist = false)
+    private Boolean overdue;
+
+    public boolean isOverdue() {
+        if ("paid".equals(status)) {
+            return false;
+        }
+        if ("overdue".equals(status)) {
+            return true;
+        }
+        if (dueDate != null) {
+            return LocalDateTime.now().isAfter(dueDate);
+        }
+        return false;
+    }
 }

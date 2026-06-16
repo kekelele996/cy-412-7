@@ -28,6 +28,7 @@ public class PermissionServiceImpl implements PermissionService {
                     Permissions.REPAIR_ASSIGN,
                     Permissions.REPAIR_UPDATE,
                     Permissions.PAYMENT_VIEW,
+                    Permissions.PAYMENT_REMIND,
                     Permissions.ANNOUNCEMENT_VIEW,
                     Permissions.ANNOUNCEMENT_PUBLISH,
                     Permissions.USER_PROFILE
@@ -40,6 +41,7 @@ public class PermissionServiceImpl implements PermissionService {
                     Permissions.REPAIR_UPDATE,
                     Permissions.PAYMENT_VIEW,
                     Permissions.PAYMENT_PAY,
+                    Permissions.PAYMENT_REMIND,
                     Permissions.ANNOUNCEMENT_VIEW,
                     Permissions.ANNOUNCEMENT_PUBLISH,
                     Permissions.USER_PROFILE,

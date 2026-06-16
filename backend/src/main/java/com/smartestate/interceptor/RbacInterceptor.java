@@ -28,6 +28,8 @@ public class RbacInterceptor implements HandlerInterceptor {
             Map.entry("GET /payments", Permissions.PAYMENT_VIEW),
             Map.entry("POST /payments/.*/pay", Permissions.PAYMENT_PAY),
             Map.entry("POST /payments/generate", Permissions.PAYMENT_VIEW),
+            Map.entry("GET /payments/overdue-stats", Permissions.PAYMENT_VIEW),
+            Map.entry("POST /payments/remind", Permissions.PAYMENT_REMIND),
             Map.entry("GET /announcements", Permissions.ANNOUNCEMENT_VIEW),
             Map.entry("POST /announcements", Permissions.ANNOUNCEMENT_PUBLISH),
             Map.entry("POST /announcements/.*/read", Permissions.ANNOUNCEMENT_VIEW),

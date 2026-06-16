@@ -19,6 +19,9 @@ public final class LogTemplates {
     public static final String PAYMENT_GENERATE = "Payment[id=%s] generated: fee_type=%s role=%s";
     public static final String PAYMENT_PAY = "Payment[id=%s] paid: month=%s role=%s";
     public static final String PAYMENT_DUPLICATE = "Payment[id=%s] duplicate payment blocked role=%s";
+    public static final String PAYMENT_OVERDUE_STATS = "Payment overdue stats queried by role=%s";
+    public static final String PAYMENT_REMIND_BATCH = "Payment remind batch sent: count=%s role=%s";
+    public static final String PAYMENT_REMIND_SINGLE = "Payment remind sent: id=%s role=%s";
     public static final String ANNOUNCEMENT_LIST = "Announcement[list] fetched by role=%s";
     public static final String ANNOUNCEMENT_CREATE = "Announcement[id=%s] created: category=%s role=%s";
     public static final String ANNOUNCEMENT_READ = "Announcement[id=%s] read_count increased by user_id=%s role=%s";

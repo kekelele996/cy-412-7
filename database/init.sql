@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS payments (
   amount DECIMAL(10,2) NOT NULL,
   month VARCHAR(7) NOT NULL,
   status ENUM('unpaid','paid','overdue') NOT NULL DEFAULT 'unpaid',
+  due_date DATETIME DEFAULT NULL,
   paid_at DATETIME DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_payments_user FOREIGN KEY (user_id) REFERENCES users(id),
@@ -117,6 +118,7 @@ INSERT INTO permissions(code, name) VALUES
 ('repair:update', '更新报修'),
 ('payment:view', '查看费用'),
 ('payment:pay', '模拟缴费'),
+('payment:remind', '催缴提醒'),
 ('announcement:view', '查看公告'),
 ('announcement:publish', '发布公告'),
 ('user:profile', '编辑个人资料'),
@@ -136,6 +138,7 @@ INSERT INTO role_permissions(role_code, permission_code) VALUES
 ('staff','repair:assign'),
 ('staff','repair:update'),
 ('staff','payment:view'),
+('staff','payment:remind'),
 ('staff','announcement:view'),
 ('staff','announcement:publish'),
 ('staff','user:profile'),
@@ -146,6 +149,7 @@ INSERT INTO role_permissions(role_code, permission_code) VALUES
 ('admin','repair:update'),
 ('admin','payment:view'),
 ('admin','payment:pay'),
+('admin','payment:remind'),
 ('admin','announcement:view'),
 ('admin','announcement:publish'),
 ('admin','user:profile'),
@@ -164,11 +168,13 @@ INSERT INTO repairs(id, user_id, title, description, type, images, status, handl
 (3, 3, '客厅吊灯闪烁', '灯具频闪，疑似线路接触不良。', 'water_power', '', 'pending', NULL, NULL)
 ON DUPLICATE KEY UPDATE title = VALUES(title), status = VALUES(status);
 
-INSERT INTO payments(id, user_id, fee_type, amount, month, status, paid_at) VALUES
-(1, 3, 'property', 426.00, '2026-06', 'unpaid', NULL),
-(2, 3, 'parking', 280.00, '2026-06', 'paid', '2026-06-03 10:20:00'),
-(3, 3, 'utilities', 168.50, '2026-05', 'paid', '2026-05-28 18:00:00')
-ON DUPLICATE KEY UPDATE amount = VALUES(amount), status = VALUES(status);
+INSERT INTO payments(id, user_id, fee_type, amount, month, status, due_date, paid_at) VALUES
+(1, 3, 'property', 426.00, '2026-06', 'unpaid', '2026-06-30 23:59:59', NULL),
+(2, 3, 'parking', 280.00, '2026-06', 'paid', '2026-06-30 23:59:59', '2026-06-03 10:20:00'),
+(3, 3, 'utilities', 168.50, '2026-05', 'paid', '2026-05-31 23:59:59', '2026-05-28 18:00:00'),
+(4, 3, 'property', 426.00, '2026-04', 'overdue', '2026-04-30 23:59:59', NULL),
+(5, 3, 'parking', 280.00, '2026-05', 'overdue', '2026-05-31 23:59:59', NULL)
+ON DUPLICATE KEY UPDATE amount = VALUES(amount), status = VALUES(status), due_date = VALUES(due_date);
 
 INSERT INTO announcements(id, title, content, category, publisher_id, publish_at, top, read_count) VALUES
 (1, '暴雨天气地下车库巡检安排', '6月15日晚间物业将加强排水设备巡检，请车主留意车库广播。', 'urgent', 2, '2026-06-15 09:30:00', 1, 42),
